@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Page</title>
+<style>
+html,body{height:100%;margin:0;font-family:Arial;}
+body{display:flex;justify-content:center;align-items:center;background:#f0f2f5;}
+.container{text-align:center;padding:30px;background:white;border-radius:15px;box-shadow:0 8px 16px rgba(0,0,0,0.2);width:400px;}
+h1{margin-bottom:20px;color:#333;}
+input, button{margin:10px;padding:10px;font-size:16px;border-radius:8px;border:none;}
+button{cursor:pointer;background-color:#4CAF50;color:white;transition:.3s;}
+button:hover{background-color:#45a049;}
+#status{margin-top:20px;font-weight:bold;color:#333;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Admin Page</h1>
+<input type="text" id="candidateName" placeholder="Candidate Name">
+<button id="addCandidate">Add Candidate</button>
+<div id="status"></div><br>
+<button onclick="goHome()">Back to Home</button>
+</div>
+
+<script type="module">
+import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.6.3/dist/ethers.min.mjs";
+
+// Replace with your deployed contract address
+const contractAddress = "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
+
+// ABI including addCandidate function
+const contractABI = [
+    {
+      "inputs":[{"internalType":"string","name":"_name","type":"string"}],
+      "name":"addCandidate",
+      "outputs":[],
+      "stateMutability":"nonpayable",
+      "type":"function"
+    }
+];
+
+let provider, signer, contract;
+
+async function init() {
+    if(!window.ethereum){ alert("MetaMask not detected!"); return; }
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    contract = new ethers.Contract(contractAddress, contractABI, signer);
+}
+
+document.getElementById("addCandidate").onclick = async ()=>{
+    const name = document.getElementById("candidateName").value.trim();
+    if(!name){ alert("Enter candidate name!"); return; }
+    try{
+        const tx = await contract.addCandidate(name);
+        await tx.wait();
+        document.getElementById("status").innerText = `Candidate ${name} added!`;
+        document.getElementById("candidateName").value="";
+    }catch(err){
+        console.error(err);
+        document.getElementById("status").innerText = `Error: ${err.message}`;
+    }
+}
+
+function goHome(){ window.location.href = "index.html"; }
+
+init();
+</script>
+
+</body>
+</html>

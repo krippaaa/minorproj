@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blockchain Voting Home</title>
+<style>
+html,body{height:100%;margin:0;font-family:Arial;}
+body{display:flex;justify-content:center;align-items:center;background:#f0f2f5;}
+.container{text-align:center;padding:30px;background:white;border-radius:15px;box-shadow:0 8px 16px rgba(0,0,0,0.2);width:350px;}
+h1{margin-bottom:30px;color:#333;}
+button{margin:10px;padding:10px 20px;font-size:16px;border-radius:8px;border:none;cursor:pointer;background:#4CAF50;color:white;transition:.3s;}
+button:hover{background:#45a049;}
+button:disabled{background:#aaa;cursor:not-allowed;}
+#status{margin-top:20px;font-weight:bold;color:#333;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Welcome to Blockchain Voting</h1>
+<button id="connectWallet">Connect Wallet</button><br>
+<button id="adminPage" disabled>Go to Admin Page</button>
+<button id="votePage" disabled>Go to Voting Page</button>
+<div id="status"></div>
+</div>
+
+<script type="module">
+import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.6.3/dist/ethers.min.mjs";
+
+const adminAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; // Hardhat first account
+let provider, signer, userAddress;
+
+async function connectWallet() {
+    try {
+        if (!window.ethereum) { alert("MetaMask not detected!"); return; }
+
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        document.getElementById("connectWallet").innerText = "Wallet Connected";
+        document.getElementById("votePage").disabled = false;
+
+        if(userAddress.toLowerCase() === adminAddress.toLowerCase()){
+            document.getElementById("adminPage").disabled = false;
+            document.getElementById("status").innerText = "Admin detected!";
+        } else {
+            document.getElementById("status").innerText = "Connected as voter!";
+        }
+
+    } catch(err){
+        console.error(err);
+        document.getElementById("status").innerText = "Error connecting wallet: " + err.message;
+    }
+}
+
+document.getElementById("connectWallet").onclick = connectWallet;
+document.getElementById("votePage").onclick = ()=>{ window.location.href="voting.html"; }
+document.getElementById("adminPage").onclick = ()=>{ window.location.href="admin.html"; }
+
+</script>
+</body>
+</html>
